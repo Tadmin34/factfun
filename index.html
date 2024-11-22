@@ -155,6 +155,20 @@ button{
 .weather-container p {
   margin: 5px 0;
 }
+/* Thêm responsive cho weather-container */
+@media (max-width: 768px) {
+  .weather-container {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    width: 80%;
+    border-radius: 5px;
+  }
+  .weather-container p {
+    margin: 3px 0;
+  }
+}
 
   </style>
 </head>
@@ -270,6 +284,7 @@ button{
     // Khởi tạo trang ngay khi mở
     initPage();
     // OpenWeatherMap API Key
+// OpenWeatherMap API Key
 const API_KEY = "062d92a2646152d39eb7845a608226cb";
 
 async function getWeatherAndLocation() {
@@ -284,7 +299,7 @@ async function getWeatherAndLocation() {
       // Sử dụng reverse geocoding để lấy địa chỉ
       const reverseGeocodingResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
       const reverseGeocodingData = await reverseGeocodingResponse.json();
-      const address = reverseGeocodingData.address.city || "Hà Nội ";
+      const address = reverseGeocodingData.address.city || "Hà Nội";
       document.getElementById("location").textContent = `Địa điểm: ${address}`;
 
       // Gọi OpenWeatherMap API để lấy thông tin thời tiết
@@ -297,9 +312,30 @@ async function getWeatherAndLocation() {
     } catch (error) {
       console.error("Lỗi khi lấy vị trí hoặc thông tin thời tiết:", error);
       // Khi không tìm thấy vị trí, sử dụng địa chỉ mặc định (Hà Nội)
+      const defaultCity = "Hà Nội";
+      document.getElementById("location").textContent = `Địa điểm: ${defaultCity}`;
+
+      // Gọi OpenWeatherMap API để lấy thông tin thời tiết cho Hà Nội
+      const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${defaultCity}&lang=vi&units=metric&appid=${API_KEY}`);
+      const weatherData = await weatherResponse.json();
+      const temperature = weatherData.main.temp; // Nhiệt độ
+      const weather = weatherData.weather[0].description; // Thời tiết mô tả
+      document.getElementById("temperature").textContent = `Nhiệt độ: ${temperature}°C`;
+      document.getElementById("weather").textContent = `Thời tiết: ${weather}`;
     }
   } else {
     document.getElementById("location").textContent = "Trình duyệt không hỗ trợ Geolocation.";
+    // Nếu không hỗ trợ Geolocation, dùng mặc định Hà Nội
+    const defaultCity = "Hà Nội";
+    document.getElementById("location").textContent = `Địa điểm: ${defaultCity}`;
+
+    // Gọi OpenWeatherMap API để lấy thông tin thời tiết cho Hà Nội
+    const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${defaultCity}&lang=vi&units=metric&appid=${API_KEY}`);
+    const weatherData = await weatherResponse.json();
+    const temperature = weatherData.main.temp; // Nhiệt độ
+    const weather = weatherData.weather[0].description; // Thời tiết mô tả
+    document.getElementById("temperature").textContent = `Nhiệt độ: ${temperature}°C`;
+    document.getElementById("weather").textContent = `Thời tiết: ${weather}`;
   }
 }
 
@@ -312,6 +348,7 @@ setInterval(() => {
   const formattedTime = now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   document.getElementById("time").textContent = `Thời gian: ${formattedTime}`;
 }, 1000);
+
 
 
   </script>
