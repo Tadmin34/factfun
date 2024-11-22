@@ -139,9 +139,35 @@ button{
         font-size: 14px;
       }
     }
+    .weather-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.weather-container p {
+  margin: 5px 0;
+}
+
   </style>
 </head>
 <body>
+  
+
+  <div class="weather-container" id="weather-container">
+    <p id="location">Địa điểm: --</p>
+    <p id="temperature">Nhiệt độ: --°C</p>
+    <p id="weather">Thời tiết: --</p>
+    <p id="time">Thời gian: --</p>
+  </div>
+  
   <div class="loader-container" id="loader-container"><!-- Loader -->
   <div class="loader" id="loader"></div>
 <h2>🥰Đang tìm sự thật🥰</h2></div>
@@ -243,6 +269,51 @@ button{
 
     // Khởi tạo trang ngay khi mở
     initPage();
+    // OpenWeatherMap API Key
+const API_KEY = "062d92a2646152d39eb7845a608226cb";
+
+async function getWeatherAndLocation() {
+  if (navigator.geolocation) {
+    try {
+      // Lấy vị trí người dùng
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+      const { latitude, longitude } = position.coords;
+
+      // Sử dụng reverse geocoding để lấy địa chỉ
+      const reverseGeocodingResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+      const reverseGeocodingData = await reverseGeocodingResponse.json();
+      const address = reverseGeocodingData.address.city || "Hà Nội ";
+      document.getElementById("location").textContent = `Địa điểm: ${address}`;
+
+      // Gọi OpenWeatherMap API để lấy thông tin thời tiết
+      const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&lang=vi&units=metric&appid=${API_KEY}`);
+      const weatherData = await weatherResponse.json();
+      const temperature = weatherData.main.temp; // Nhiệt độ
+      const weather = weatherData.weather[0].description; // Thời tiết mô tả
+      document.getElementById("temperature").textContent = `Nhiệt độ: ${temperature}°C`;
+      document.getElementById("weather").textContent = `Thời tiết: ${weather}`;
+    } catch (error) {
+      console.error("Lỗi khi lấy vị trí hoặc thông tin thời tiết:", error);
+      // Khi không tìm thấy vị trí, sử dụng địa chỉ mặc định (Hà Nội)
+    }
+  } else {
+    document.getElementById("location").textContent = "Trình duyệt không hỗ trợ Geolocation.";
+  }
+}
+
+// Gọi hàm để lấy thông tin thời tiết và địa chỉ
+getWeatherAndLocation();
+
+// Cập nhật thời gian hiện tại
+setInterval(() => {
+  const now = new Date();
+  const formattedTime = now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  document.getElementById("time").textContent = `Thời gian: ${formattedTime}`;
+}, 1000);
+
+
   </script>
 
 </body>
